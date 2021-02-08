@@ -25,5 +25,18 @@ def index_categories():
     return jsonify(categories)
 
 
+@app.route('/categories/<int:cat_id>')
+def show_category(cat_id):
+    db = get_db()
+    cursor = db.execute("SELECT id, name FROM categories WHERE id = ?", [cat_id])
+    category = cursor.fetchone()
+    if category == None:
+        abort(404)
+    return jsonify({
+        "id": category[0],
+        "name": category[1]
+    })
+
+
 if __name__ == "__main__":
     app.run(debug=True)
