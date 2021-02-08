@@ -91,5 +91,32 @@ def update_category(cat_id):
             abort(404)
 
 
+@app.route('/categories/<int:cat_id>', methods=['GET', 'DELETE'])
+def delete_category(cat_id):
+    db = get_db()
+    if request.method == "DELETE":
+        try:
+            cursor = db.execute(
+                "SELECT id, name FROM categories WHERE id = ?",
+                [cat_id]
+            )
+            del_cat = []
+            for cat in cursor:
+                del_cat.append({
+                    "id": cat[0],
+                    "name": cat[1]
+                    })
+            cursor = db.execute(
+                "DELETE FROM categories WHERE id = ?",
+                [cat_id]
+            )
+            db.commit()
+            if len(del_cat) <= 0:
+                abort(404)
+            return jsonify(del_cat)
+        except IndexError:
+            abort(404)
+
+
 if __name__ == "__main__":
     app.run(debug=True)
