@@ -47,7 +47,8 @@ def create_category():
         try:
             name = request.form.get('name')
             cursor = db.execute(
-                "INSERT INTO categories (name) values (?)", [name]
+                "INSERT INTO categories (name) values (?)",
+                [name]
             )
             new_cat = db.commit()
             cursor = db.execute(
@@ -60,8 +61,34 @@ def create_category():
                 "id": new_cat[0],
                 "name": new_cat[1]
             })
-        except UnprocessableEntity:
+        except Exception:
             abort(422)
+
+
+@app.route('/categories/<int:cat_id>', methods=['GET', 'POST', 'PUT'])
+def update_category(cat_id):
+    db = get_db()
+    if request.method == "PUT":
+        try:
+            name = request.form['name']
+            cursor = db.execute(
+                "UPDATE categories SET name = ? WHERE id = ?",
+                [name, cat_id]
+            )
+            modified_cat = db.commit()
+            cursor = db.execute(
+                "SELECT id, name FROM categories WHERE id = ?",
+                [cat_id]
+            )
+            modified_cat = cursor.fetchone()
+            if modified_cat is None:
+                abort(404)
+            return jsonify({
+                'id': modified_cat[0],
+                'name': modified_cat[1]
+            })
+        except IndexError:
+            abort(404)
 
 
 if __name__ == "__main__":
