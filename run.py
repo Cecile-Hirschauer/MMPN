@@ -117,5 +117,44 @@ def delete_category(cat_id):
             abort(404)
 
 
+@app.route('/toys')
+def index_toys():
+    db = get_db()
+    cursor = db.execute("SELECT id, name, description, price, category_id FROM toys")
+    toys = []
+    for toy in cursor:
+        toys.append({
+            "id": toy[0],
+            "name": toy[1],
+            "description": toy[2],
+            "price": toy[3],
+            "category_id": toy[4]
+        })
+    return jsonify(toys)
+
+
+@app.route('/toys/<int:toy_id>')
+def show_toy(toy_id):
+    db = get_db()
+    cursor = db.execute(
+        "SELECT toys.id, toys.name, toys.description, toys.price, categories.name as category \
+        FROM toys \
+        LEFT JOIN categories \
+        ON toys.category_id = categories.id \
+        WHERE toys.id = ?", [toy_id]
+    )
+    toy = cursor.fetchone()
+    if toy is None:
+        abort(404)
+    return jsonify({
+        "id": toy[0],
+        "name": toy[1],
+        "description": toy[2],
+        "price": toy[3],
+        "category": toy[4]
+    })
+
+
 if __name__ == "__main__":
     app.run(debug=True)
+
