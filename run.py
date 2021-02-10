@@ -117,6 +117,35 @@ def delete_category(cat_id):
             abort(404)
 
 
+@app.route('/categories/<cat_name>/toys')
+def show_toys_category(cat_name):
+    db = get_db()
+    if request.method == 'GET':
+        try:
+            cursor = db.execute(
+                "SELECT toys.id, toys.name, description, price, categories.name as category \
+                FROM toys LEFT JOIN categories ON toys.category_id = categories.id \
+                WHERE categories.name = ?",
+                [cat_name]
+            )
+            my_toys = cursor.fetchall()
+            toys_category= []
+            for toy in my_toys:
+                toys_category.append({
+                    "id": toy[0],
+                    "name": toy[1],
+                    "description": toy[2],
+                    "price": toy[3],
+                    'category': toy[4]
+                })
+            if toys_category == []:
+                abort(404)
+            return jsonify(toys_category)
+                    
+        except UnboundLocalError:
+            abort(404)
+
+
 @app.route('/toys')
 def index_toys():
     db = get_db()
