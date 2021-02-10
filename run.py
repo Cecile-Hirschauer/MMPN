@@ -137,7 +137,8 @@ def index_toys():
 def show_toy(toy_id):
     db = get_db()
     cursor = db.execute(
-        "SELECT toys.id, toys.name, toys.description, toys.price, categories.name as category \
+        "SELECT toys.id, toys.name, toys.description, \
+        toys.price, categories.name as category \
         FROM toys \
         LEFT JOIN categories \
         ON toys.category_id = categories.id \
