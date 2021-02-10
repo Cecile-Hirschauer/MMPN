@@ -120,8 +120,11 @@ def delete_category(cat_id):
 @app.route('/toys')
 def index_toys():
     db = get_db()
-    cursor = db.execute("SELECT id, name, description, price, category_id \
-                        FROM toys")
+    cursor = db.execute("SELECT toys.id, toys.name, toys.description, \
+                        toys.price, categories.name as category \
+                        FROM toys \
+                        LEFT JOIN categories \
+                        ON toys.category_id = categories.id")
     toys = []
     for toy in cursor:
         toys.append({
@@ -129,7 +132,7 @@ def index_toys():
             "name": toy[1],
             "description": toy[2],
             "price": toy[3],
-            "category_id": toy[4]
+            "category": toy[4]
         })
     return jsonify(toys)
 
@@ -182,21 +185,121 @@ def create_toy():
                         toys.price, categories.name as category \
                         FROM toys \
                         LEFT JOIN categories \
-                        ON toys.category_id = categories.id"
+                        ON toys.category_id = categories.id \
+                        WHERE categories.id = ?",
+                        [category_id]
                     )
-                    toy = cursor.fetchone()
-                    if toy is None:
+                    new_toy = cursor.fetchone()
+                    if cursor is None:
                         abort(404)
-                    return jsonify({
-                        "id": toy[0],
-                        "name": toy[1],
-                        "description": toy[2],
-                        "price": toy[3],
-                        "category": toy[4]
-                    })
+                    else:
+                        return jsonify({
+                            "id": new_toy[0],
+                            "name": new_toy[1],
+                            "description": new_toy[2],
+                            "price": new_toy[3],
+                            "category": new_toy[4]
+                        })          
         except Exception:
             abort(422)
     
+
+@app.route('/toys/<int:toy_id>', methods=['GET', 'POST', 'PUT'])
+def update_toy(toy_id):
+    db = get_db()
+    if request.method == 'PUT':
+        try:
+            modified_toy = request.values
+            for k in modified_toy.keys():
+                if k == 'name':
+                    name = request.form['name']
+                    cursor = db.execute(
+                        "UPDATE toys \
+                        SET name = ? \
+                        WHERE id = ?",
+                        [name, toy_id]
+                    )
+                if k == 'description':
+                    description = request.form['description']
+                    cursor = db.execute(
+                        "UPDATE toys \
+                        SET description = ? \
+                        WHERE id = ?",
+                        [description, toy_id]
+                    )
+                if k == 'price':
+                    price = int(request.form['price'])
+                    cursor=db.execute(
+                        "UPDATE toys \
+                        SET price = ? \
+                        WHERE id = ?",
+                        [price, toy_id]
+                    )
+                if k == 'category_id':
+                    category_id = int(request.form['category_id'])
+                    cursor = db.execute(
+                        "UPDATE toys \
+                        SET category_id = ? \
+                        WHERE id = ?",
+                        [category_id, toy_id]
+                    ) 
+            db.commit()
+            cursor = db.execute(
+                "SELECT toys.id, toys.name, toys.description, \
+            toys.price, categories.name as category \
+            FROM toys \
+            LEFT JOIN categories \
+            ON toys.category_id = categories.id \
+            WHERE toys.id = ?", [toy_id]
+            )
+            toy = cursor.fetchone()
+            if toy is None:
+                abort(404)
+            return jsonify({
+                "id": toy[0],
+                "name": toy[1],
+                "description": toy[2],
+                "price": toy[3],
+                "category": toy[4]
+            })
+
+        except IndexError:
+            abort(404)
+
+
+@app.route('/toys/<int:toy_id>', methods=['GET', 'DELETE'])
+def delete_toy(toy_id):
+    db = get_db()
+    try:
+        if request.method == 'DELETE':
+            cursor = db.execute(
+                "SELECT toys.id, toys.name, description, price, \
+                categories.name as category \
+                FROM toys \
+                LEFT JOIN categories \
+                ON toys.category_id = categories.id \
+                WHERE toys.id = ?",
+                [toy_id]
+            )
+            toy = cursor.fetchone()
+            if toy is None:
+                abort(404)
+            else:
+                cursor = db.execute(
+                    "DELETE FROM toys WHERE id = ?", [toy_id]
+                )
+                db.commit()
+                return jsonify({
+                    "id": toy[0],
+                    "name": toy[1],
+                    "description": toy[2],
+                    "price": toy[3],
+                    "category": toy[4]
+                })
+        else:
+            abort(404)
+    except IndexError:
+        abort(404)
 
 
 if __name__ == "__main__":
