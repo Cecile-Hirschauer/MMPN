@@ -50,7 +50,7 @@ def create_category():
                 "INSERT INTO categories (name) values (?)",
                 [name]
             )
-            new_cat = db.commit()
+            db.commit()
             cursor = db.execute(
                 "SELECT MAX(id), name FROM categories"
             )
@@ -100,20 +100,19 @@ def delete_category(cat_id):
                 "SELECT id, name FROM categories WHERE id = ?",
                 [cat_id]
             )
-            del_cat = []
-            for cat in cursor:
-                del_cat.append({
-                    "id": cat[0],
-                    "name": cat[1]
-                    })
-            cursor = db.execute(
-                "DELETE FROM categories WHERE id = ?",
-                [cat_id]
-            )
-            db.commit()
-            if len(del_cat) <= 0:
+            delete_category = cursor.fetchone()
+            if delete_category is None:
                 abort(404)
-            return jsonify(del_cat)
+            else:
+                cursor = db.execute(
+                    "DELETE FROM categories WHERE id = ?",
+                    [cat_id]
+                )
+                db.commit()
+                return jsonify({
+                    'id': delete_category[0],
+                    'name': delete_category[1]
+                })
         except IndexError:
             abort(404)
 
