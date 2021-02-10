@@ -120,7 +120,8 @@ def delete_category(cat_id):
 @app.route('/toys')
 def index_toys():
     db = get_db()
-    cursor = db.execute("SELECT id, name, description, price, category_id FROM toys")
+    cursor = db.execute("SELECT id, name, description, price, category_id \
+                        FROM toys")
     toys = []
     for toy in cursor:
         toys.append({
@@ -156,6 +157,47 @@ def show_toy(toy_id):
     })
 
 
+@app.route('/toys', methods=['GET', 'POST'])
+def create_toy():
+    db = get_db()
+    if request.method == "POST":
+        try:
+            new_toy = request.values
+            new_toy_keys = list(new_toy.keys())
+            attributes = ['name', 'description', 'price', 'category_id']
+            for k in new_toy_keys:
+                if k in attributes and len(new_toy_keys) == len(attributes):
+                    name = request.form.get('name')
+                    description = request.form.get('description')
+                    price = int(request.form.get('price'))
+                    category_id = int(request.form.get('category_id'))
+                    cursor = db.execute(
+                    "INSERT INTO toys (name, description, price, category_id) \
+                     values (?, ?, ?, ?)",
+                    [name, description, price, category_id]
+                    )
+                    db.commit()
+                    cursor = db.execute(
+                        "SELECT MAX(toys.id), toys.name, toys.description, \
+                        toys.price, categories.name as category \
+                        FROM toys \
+                        LEFT JOIN categories \
+                        ON toys.category_id = categories.id"
+                    )
+                    toy = cursor.fetchone()
+                    if toy is None:
+                        abort(404)
+                    return jsonify({
+                        "id": toy[0],
+                        "name": toy[1],
+                        "description": toy[2],
+                        "price": toy[3],
+                        "category": toy[4]
+                    })
+        except Exception:
+            abort(422)
+    
+
+
 if __name__ == "__main__":
     app.run(debug=True)
-
