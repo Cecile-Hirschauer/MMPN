@@ -173,11 +173,16 @@ def create_toy():
                     name = request.form.get('name')
                     description = request.form.get('description')
                     price = int(request.form.get('price'))
-                    category_id = int(request.form.get('category_id'))
+                    category = request.form.get('category')
+                    cursor = db.execute(
+                        "SELECT id FROM categories WHERE name = ?",
+                        [category]
+                    )
+                    my_category = cursor.fetchone()
                     cursor = db.execute(
                     "INSERT INTO toys (name, description, price, category_id) \
-                     values (?, ?, ?, ?)",
-                    [name, description, price, category_id]
+                     VALUES (?, ?, ?, ?)",
+                        [name, description, price, my_category[0]]
                     )
                     db.commit()
                     cursor = db.execute(
@@ -186,8 +191,8 @@ def create_toy():
                         FROM toys \
                         LEFT JOIN categories \
                         ON toys.category_id = categories.id \
-                        WHERE categories.id = ?",
-                        [category_id]
+                        WHERE categories.name = ?",
+                        [category]
                     )
                     new_toy = cursor.fetchone()
                     if cursor is None:
@@ -202,7 +207,7 @@ def create_toy():
                         })          
         except Exception:
             abort(422)
-    
+
 
 @app.route('/toys/<int:toy_id>', methods=['GET', 'POST', 'PUT'])
 def update_toy(toy_id):
@@ -243,6 +248,19 @@ def update_toy(toy_id):
                         WHERE id = ?",
                         [category_id, toy_id]
                     ) 
+                if k == 'category':
+                    category = request.form['category']
+                    cursor = db.execute(
+                        "SELECT id FROM categories WHERE name = ?",
+                        [category]
+                    )
+                    my_cat = cursor.fetchone()
+                    cursor = db.execute(
+                        "UPDATE toys \
+                        SET category_id = ? \
+                        WHERE id = ?",
+                        [my_cat[0], toy_id]
+                    )
             db.commit()
             cursor = db.execute(
                 "SELECT toys.id, toys.name, toys.description, \
@@ -262,7 +280,6 @@ def update_toy(toy_id):
                 "price": toy[3],
                 "category": toy[4]
             })
-
         except IndexError:
             abort(404)
 
