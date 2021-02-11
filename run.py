@@ -124,13 +124,15 @@ def show_toys_category(cat_name):
     if request.method == 'GET':
         try:
             cursor = db.execute(
-                "SELECT toys.id, toys.name, description, price, categories.name as category \
-                FROM toys LEFT JOIN categories ON toys.category_id = categories.id \
-                WHERE categories.name = ?",
-                [cat_name]
+                """SELECT toys.id, toys.name, description, price,
+                    categories.name as category
+                    FROM toys
+                    LEFT JOIN categories
+                    ON toys.category_id = categories.id
+                    WHERE categories.name = ?""", [cat_name]
             )
             my_toys = cursor.fetchall()
-            toys_category= []
+            toys_category = []
             for toy in my_toys:
                 toys_category.append({
                     "id": toy[0],
@@ -142,7 +144,6 @@ def show_toys_category(cat_name):
             if toys_category == []:
                 abort(404)
             return jsonify(toys_category)
-                    
         except UnboundLocalError:
             abort(404)
 
@@ -150,11 +151,11 @@ def show_toys_category(cat_name):
 @app.route('/toys')
 def index_toys():
     db = get_db()
-    cursor = db.execute("SELECT toys.id, toys.name, toys.description, \
-                        toys.price, categories.name as category \
-                        FROM toys \
-                        LEFT JOIN categories \
-                        ON toys.category_id = categories.id")
+    cursor = db.execute("""SELECT toys.id, toys.name, toys.description,
+                        toys.price, categories.name as category
+                        FROM toys
+                        LEFT JOIN categories
+                        ON toys.category_id = categories.id""")
     toys = []
     for toy in cursor:
         toys.append({
@@ -171,12 +172,12 @@ def index_toys():
 def show_toy(toy_id):
     db = get_db()
     cursor = db.execute(
-        "SELECT toys.id, toys.name, toys.description, \
-        toys.price, categories.name as category \
-        FROM toys \
-        LEFT JOIN categories \
-        ON toys.category_id = categories.id \
-        WHERE toys.id = ?", [toy_id]
+        """SELECT toys.id, toys.name, toys.description,
+        toys.price, categories.name as category
+        FROM toys
+        LEFT JOIN categories
+        ON toys.category_id = categories.id
+        WHERE toys.id = ?""", [toy_id]
     )
     toy = cursor.fetchone()
     if toy is None:
@@ -210,18 +211,19 @@ def create_toy():
                     )
                     my_category = cursor.fetchone()
                     cursor = db.execute(
-                    "INSERT INTO toys (name, description, price, category_id) \
-                     VALUES (?, ?, ?, ?)",
+                        """INSERT INTO toys
+                        (name, description, price, category_id)
+                        VALUES (?, ?, ?, ?)""",
                         [name, description, price, my_category[0]]
                     )
                     db.commit()
                     cursor = db.execute(
-                        "SELECT MAX(toys.id), toys.name, toys.description, \
-                        toys.price, categories.name as category \
-                        FROM toys \
-                        LEFT JOIN categories \
-                        ON toys.category_id = categories.id \
-                        WHERE categories.name = ?",
+                        """SELECT MAX(toys.id), toys.name, toys.description,
+                        toys.price, categories.name as category
+                        FROM toys
+                        LEFT JOIN categories
+                        ON toys.category_id = categories.id
+                        WHERE categories.name = ?""",
                         [category]
                     )
                     new_toy = cursor.fetchone()
@@ -234,7 +236,7 @@ def create_toy():
                             "description": new_toy[2],
                             "price": new_toy[3],
                             "category": new_toy[4]
-                        })          
+                        })
         except Exception:
             abort(422)
 
@@ -249,35 +251,27 @@ def update_toy(toy_id):
                 if k == 'name':
                     name = request.form['name']
                     cursor = db.execute(
-                        "UPDATE toys \
-                        SET name = ? \
-                        WHERE id = ?",
+                        "UPDATE toys SET name = ? WHERE id = ?",
                         [name, toy_id]
                     )
                 if k == 'description':
                     description = request.form['description']
                     cursor = db.execute(
-                        "UPDATE toys \
-                        SET description = ? \
-                        WHERE id = ?",
+                        "UPDATE toys SET description = ? WHERE id = ?",
                         [description, toy_id]
                     )
                 if k == 'price':
                     price = int(request.form['price'])
-                    cursor=db.execute(
-                        "UPDATE toys \
-                        SET price = ? \
-                        WHERE id = ?",
+                    cursor = db.execute(
+                        "UPDATE toys SET price = ? WHERE id = ?",
                         [price, toy_id]
                     )
                 if k == 'category_id':
                     category_id = int(request.form['category_id'])
                     cursor = db.execute(
-                        "UPDATE toys \
-                        SET category_id = ? \
-                        WHERE id = ?",
+                        "UPDATE toys SET category_id = ? WHERE id = ?",
                         [category_id, toy_id]
-                    ) 
+                    )
                 if k == 'category':
                     category = request.form['category']
                     cursor = db.execute(
@@ -285,20 +279,15 @@ def update_toy(toy_id):
                         [category]
                     )
                     my_cat = cursor.fetchone()
-                    cursor = db.execute(
-                        "UPDATE toys \
-                        SET category_id = ? \
-                        WHERE id = ?",
-                        [my_cat[0], toy_id]
-                    )
             db.commit()
             cursor = db.execute(
-                "SELECT toys.id, toys.name, toys.description, \
-            toys.price, categories.name as category \
-            FROM toys \
-            LEFT JOIN categories \
-            ON toys.category_id = categories.id \
-            WHERE toys.id = ?", [toy_id]
+                """SELECT toys.id, toys.name, toys.description,
+                toys.price, categories.name as category
+                FROM toys
+                LEFT JOIN categories
+                ON toys.category_id = categories.id
+                WHERE toys.id = ?""",
+                [toy_id]
             )
             toy = cursor.fetchone()
             if toy is None:
@@ -320,12 +309,12 @@ def delete_toy(toy_id):
     try:
         if request.method == 'DELETE':
             cursor = db.execute(
-                "SELECT toys.id, toys.name, description, price, \
-                categories.name as category \
-                FROM toys \
-                LEFT JOIN categories \
-                ON toys.category_id = categories.id \
-                WHERE toys.id = ?",
+                """SELECT toys.id, toys.name, description, price,
+                categories.name as category
+                FROM toys
+                LEFT JOIN categories
+                ON toys.category_id = categories.id
+                WHERE toys.id = ?""",
                 [toy_id]
             )
             toy = cursor.fetchone()
@@ -404,9 +393,11 @@ def create_elf():
                     login = request.form['login']
                     password = request.form['password']
                     hash_password = md5(password.encode()).hexdigest()
-            cursor = db.execute("""
-                    INSERT INTO elves (first_name, last_name, login, password)
-                    VALUES (?, ?, ?, ?)""", [first_name, last_name, login, hash_password])
+            cursor = db.execute(
+                """ INSERT INTO elves (first_name, last_name, login, password)
+                VALUES (?, ?, ?, ?)""",
+                [first_name, last_name, login, hash_password]
+                )
             db.commit()
             cursor = db.execute("""
                         SELECT MAX(id), first_name, last_name, login, password
@@ -421,7 +412,7 @@ def create_elf():
                 'last_name': elf[2],
                 'login': elf[3],
                 'password': elf[4]
-                })      
+                })
         except Exception:
             abort(422)
 
@@ -432,45 +423,38 @@ def update_elf(elf_id):
     if request.method == 'PUT':
         try:
             modified_elf = request.values.to_dict()
-            for k, v  in modified_elf.items():
+            for k in modified_elf.keys():
                 if k == 'first_name':
                     first_name = request.form['first_name']
                     cursor = db.execute(
-                        "UPDATE elves \
-                        SET first_name = ? \
-                        WHERE id = ?",
+                        "UPDATE elves SET first_name = ? WHERE id = ?",
                         [first_name, elf_id]
                     )
                 if k == 'last_name':
                     last_name = request.form['last_name']
                     cursor = db.execute(
-                        "UPDATE elves \
-                        SET last_name = ? \
-                        WHERE id = ?",
+                        "UPDATE elves SET last_name = ? WHERE id = ?",
                         [last_name, elf_id]
                     )
                 if k == 'login':
                     login = request.form['login']
-                    cursor=db.execute(
-                        "UPDATE elves \
-                        SET login = ? \
-                        WHERE id = ?",
+                    cursor = db.execute(
+                        "UPDATE elves SET login = ? WHERE id = ?",
                         [login, elf_id]
                     )
                 if k == 'password':
                     password = request.form['password']
                     hash_password = md5(password.encode()).hexdigest()
                     cursor = db.execute(
-                        "UPDATE elves \
-                        SET password = ? \
-                        WHERE id = ?",
+                        "UPDATE elves SET password = ? WHERE id = ?",
                         [hash_password, elf_id]
-                    ) 
+                    )
             db.commit()
-            cursor = db.execute("""SELECT id, first_name, last_name, login, password
-                           FROM elves
-                           WHERE id = ?
-                        """, [elf_id])
+            cursor = db.execute("""SELECT id, first_name,
+                                last_name, login, password
+                                FROM elves
+                                WHERE id = ?""",
+                                [elf_id])
             elf = cursor.fetchone()
             if elf is None:
                 abort(404)
@@ -490,10 +474,11 @@ def delete_elf(elf_id):
     db = get_db()
     try:
         if request.method == 'DELETE':
-            cursor = db.execute("""SELECT id, first_name, last_name, login, password
-                           FROM elves
-                           WHERE id = ?
-                        """, [elf_id])
+            cursor = db.execute("""SELECT id, first_name,
+                                last_name, login, password
+                                FROM elves
+                                WHERE id = ?""",
+                                [elf_id])
             elf = cursor.fetchone()
             if elf is None:
                 abort(404)
@@ -513,7 +498,7 @@ def delete_elf(elf_id):
             abort(404)
     except IndexError:
         abort(404)
- 
+
 
 if __name__ == "__main__":
     app.run(debug=True)
