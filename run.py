@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify, g, abort
 import sqlite3
+from hashlib import md5
 
 app = Flask(__name__)
 DATABASE = 'app.db'
@@ -346,6 +347,47 @@ def delete_toy(toy_id):
             abort(404)
     except IndexError:
         abort(404)
+
+@app.route('/elves')
+def index_elves():
+    db = get_db()
+    cursor = db.execute("""
+                        SELECT id, first_name, last_name, login, password
+                        FROM elves
+                        """)
+    elves = []
+    for elf in cursor:
+        elves.append({
+            'id': elf[0],
+            'first_name': elf[1],
+            'last_name': elf[2],
+            'login': elf[3],
+            'password': elf[4]
+        })
+    if elves is None:
+        abort(404)
+    return jsonify(elves)
+
+
+@app.route('/elves/<int:elf_id>')
+def show_elf(elf_id):
+    db = get_db()
+    cursor = db.execute("""SELECT id, first_name, last_name, login, password
+                           FROM elves
+                           WHERE id = ?
+                        """, [elf_id])
+    elf = cursor.fetchone()
+    if elf is None:
+        abort(404)
+    return jsonify({
+        'id': elf[0],
+        'first_name': elf[1],
+        'last_name': elf[2],
+        'login': elf[3],
+        'password': elf[4]
+        })
+        
+
 
 
 if __name__ == "__main__":
