@@ -403,9 +403,10 @@ def create_elf():
                     last_name = request.form['last_name']
                     login = request.form['login']
                     password = request.form['password']
+                    hash_password = md5(password.encode()).hexdigest()
             cursor = db.execute("""
                     INSERT INTO elves (first_name, last_name, login, password)
-                    VALUES (?, ?, ?, ?)""", [first_name, last_name, login, password])
+                    VALUES (?, ?, ?, ?)""", [first_name, last_name, login, hash_password])
             db.commit()
             cursor = db.execute("""
                         SELECT MAX(id), first_name, last_name, login, password
@@ -430,8 +431,8 @@ def update_elf(elf_id):
     db = get_db()
     if request.method == 'PUT':
         try:
-            modified_elf = request.values
-            for k in modified_elf.keys():
+            modified_elf = request.values.to_dict()
+            for k, v  in modified_elf.items():
                 if k == 'first_name':
                     first_name = request.form['first_name']
                     cursor = db.execute(
@@ -457,12 +458,13 @@ def update_elf(elf_id):
                         [login, elf_id]
                     )
                 if k == 'password':
-                    password = int(request.form['password'])
+                    password = request.form['password']
+                    hash_password = md5(password.encode()).hexdigest()
                     cursor = db.execute(
                         "UPDATE elves \
                         SET password = ? \
                         WHERE id = ?",
-                        [password, elf_id]
+                        [hash_password, elf_id]
                     ) 
             db.commit()
             cursor = db.execute("""SELECT id, first_name, last_name, login, password
@@ -484,7 +486,7 @@ def update_elf(elf_id):
 
 
 @app.route('/elves/<int:elf_id>', methods=['GET', 'DELETE'])
-def delete_toy(elf_id):
+def delete_elf(elf_id):
     db = get_db()
     try:
         if request.method == 'DELETE':
