@@ -58,18 +58,18 @@ cursor.execute("""CREATE TABLE elves (id INTEGER PRIMARY KEY AUTOINCREMENT,
 #     => girafe = b4c4bfec4e7ff1d0a7ceb40d1ec56292
 #     => banane = 5473e3f141e0328ce87dac9366e0aace
 
-for elf in [
-    ("Bushy", "Evergreen", "Bgreen", '5ebe2294ecd0e0f08eab7690d2a6ee69'),
-    ("Shinny", "Upatree", "Satree", '3d4fe7a00bc6fb52a91685d038733d6f'),
-    ("Pepper", "Minstix",'Pnstix' , 'b4c4bfec4e7ff1d0a7ceb40d1ec56292')
-]:
-    cursor.execute(
-        """
-        INSERT INTO elves (first_name, last_name, login, password) 
-        VALUES (?, ?, ?, ?)
-        """,
-        elf    
-    )
+# for elf in [
+#     ("Bushy", "Evergreen", "Bgreen", '5ebe2294ecd0e0f08eab7690d2a6ee69'),
+#     ("Shinny", "Upatree", "Satree", '3d4fe7a00bc6fb52a91685d038733d6f'),
+#     ("Pepper", "Minstix",'Pnstix' , 'b4c4bfec4e7ff1d0a7ceb40d1ec56292')
+# ]:
+#     cursor.execute(
+#         """
+#         INSERT INTO elves (first_name, last_name, login, password) 
+#         VALUES (?, ?, ?, ?)
+#         """,
+#         elf    
+#     )
             
 
 
