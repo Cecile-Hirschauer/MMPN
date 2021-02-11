@@ -348,6 +348,7 @@ def delete_toy(toy_id):
     except IndexError:
         abort(404)
 
+
 @app.route('/elves')
 def index_elves():
     db = get_db()
@@ -386,9 +387,131 @@ def show_elf(elf_id):
         'login': elf[3],
         'password': elf[4]
         })
-        
 
 
+@app.route('/elves', methods=['GET', 'POST'])
+def create_elf():
+    db = get_db()
+    if request.method == 'POST':
+        try:
+            values = request.values
+            values_keys = list(values.keys())
+            attributes = ['first_name', 'last_name', 'login', 'password']
+            for k in attributes:
+                if k in values_keys and len(values_keys) == len(attributes):
+                    first_name = request.form['first_name']
+                    last_name = request.form['last_name']
+                    login = request.form['login']
+                    password = request.form['password']
+            cursor = db.execute("""
+                    INSERT INTO elves (first_name, last_name, login, password)
+                    VALUES (?, ?, ?, ?)""", [first_name, last_name, login, password])
+            db.commit()
+            cursor = db.execute("""
+                        SELECT MAX(id), first_name, last_name, login, password
+                        FROM elves
+                        """)
+            elf = cursor.fetchone()
+            if elf is None:
+                abort(404)
+            return jsonify({
+                'id': elf[0],
+                'first_name': elf[1],
+                'last_name': elf[2],
+                'login': elf[3],
+                'password': elf[4]
+                })      
+        except Exception:
+            abort(422)
+
+
+@app.route('/elves/<int:elf_id>', methods=['GET', 'POST', 'PUT'])
+def update_elf(elf_id):
+    db = get_db()
+    if request.method == 'PUT':
+        try:
+            modified_elf = request.values
+            for k in modified_elf.keys():
+                if k == 'first_name':
+                    first_name = request.form['first_name']
+                    cursor = db.execute(
+                        "UPDATE elves \
+                        SET first_name = ? \
+                        WHERE id = ?",
+                        [first_name, elf_id]
+                    )
+                if k == 'last_name':
+                    last_name = request.form['last_name']
+                    cursor = db.execute(
+                        "UPDATE elves \
+                        SET last_name = ? \
+                        WHERE id = ?",
+                        [last_name, elf_id]
+                    )
+                if k == 'login':
+                    login = request.form['login']
+                    cursor=db.execute(
+                        "UPDATE elves \
+                        SET login = ? \
+                        WHERE id = ?",
+                        [login, elf_id]
+                    )
+                if k == 'password':
+                    password = int(request.form['password'])
+                    cursor = db.execute(
+                        "UPDATE elves \
+                        SET password = ? \
+                        WHERE id = ?",
+                        [password, elf_id]
+                    ) 
+            db.commit()
+            cursor = db.execute("""SELECT id, first_name, last_name, login, password
+                           FROM elves
+                           WHERE id = ?
+                        """, [elf_id])
+            elf = cursor.fetchone()
+            if elf is None:
+                abort(404)
+            return jsonify({
+                'id': elf[0],
+                'first_name': elf[1],
+                'last_name': elf[2],
+                'login': elf[3],
+                'password': elf[4]
+                })
+        except IndexError:
+            abort(404)
+
+
+@app.route('/elves/<int:elf_id>', methods=['GET', 'DELETE'])
+def delete_toy(elf_id):
+    db = get_db()
+    try:
+        if request.method == 'DELETE':
+            cursor = db.execute("""SELECT id, first_name, last_name, login, password
+                           FROM elves
+                           WHERE id = ?
+                        """, [elf_id])
+            elf = cursor.fetchone()
+            if elf is None:
+                abort(404)
+            else:
+                cursor = db.execute(
+                    "DELETE FROM elves WHERE id = ?", [elf_id]
+                )
+                db.commit()
+                return jsonify({
+                    'id': elf[0],
+                    'first_name': elf[1],
+                    'last_name': elf[2],
+                    'login': elf[3],
+                    'password': elf[4]
+                })
+        else:
+            abort(404)
+    except IndexError:
+        abort(404)
+ 
 
 if __name__ == "__main__":
     app.run(debug=True)
