@@ -98,7 +98,7 @@ cursor.execute(
     (id INTEGER PRIMARY KEY AUTOINCREMENT,
      elf_id INTEGER NOT NULL,
      wish_id INTEGER NOT NULL,
-     done BOOlEAN NOT NULL DEFAULT False,
+     done BOOLEAN NOT NULL DEFAULT False,
      done_at DATE DEFAULT None,
      CONSTRAINT fk_elves
      FOREIGN KEY (elf_id)

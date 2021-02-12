@@ -271,8 +271,11 @@ def update_toy(toy_id):
                 cursor = db.execute(
                     "SELECT id FROM categories WHERE name = ?",
                     [category]
+                    
                 )
                 my_cat = cursor.fetchone()
+                cursor = db.execute("UPDATE toys SET category_id = ? WHERE id = ?",
+                        [my_cat[0], toy_id])
         db.commit()
         cursor = db.execute(
             """SELECT toys.id, toys.name, toys.description,
