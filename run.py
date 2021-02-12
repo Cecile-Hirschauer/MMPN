@@ -198,7 +198,7 @@ def create_toy():
         try:
             new_toy = request.values
             new_toy_keys = list(new_toy.keys())
-            attributes = ['name', 'description', 'price', 'category_id']
+            attributes = ['name', 'description', 'price', 'category']
             for k in new_toy_keys:
                 if k in attributes and len(new_toy_keys) == len(attributes):
                     name = request.form.get('name')
@@ -209,12 +209,11 @@ def create_toy():
                         "SELECT id FROM categories WHERE name = ?",
                         [category]
                     )
-                    my_category = cursor.fetchone()
+                    category_id = cursor.fetchone()
                     cursor = db.execute(
-                        """INSERT INTO toys
-                        (name, description, price, category_id)
-                        VALUES (?, ?, ?, ?)""",
-                        [name, description, price, my_category[0]]
+                            "INSERT INTO toys (name, description, price, category_id) \
+                            VALUES (?, ?, ?, ?)",
+                            [name, description, price, category_id[0]]
                     )
                     db.commit()
                     cursor = db.execute(
