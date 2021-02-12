@@ -15,4 +15,5 @@ curl -X DELETE http://127.0.0.1:5000/toys/4
 curl http://127.0.0.1:5000/elves
 curl http://127.0.0.1:5000/elves/1
 curl -d "first_name=Cathrine&last_name=Kohler&login=login-xszce&password=pwd-dchfkqid" -X POST http://127.0.0.1:5000/elves
-curl -d "last_name=Elfman&login=Tlfman" -X PUT http://127.0.0.1:5000/elf/3
+curl -d "last_name=Elfman&login=Tlfman" -X PUT http://127.0.0.1:5000/elves/3
+curl -X DELETE http://127.0.0.1:5000/elves/3

@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify, g, abort
 import sqlite3
 from hashlib import md5
+from random import randrange
 
 app = Flask(__name__)
 DATABASE = 'app.db'
@@ -497,6 +498,94 @@ def delete_elf(elf_id):
             abort(404)
     except IndexError:
         abort(404)
+
+
+@app.route('/wishes')
+def index_wishes():
+    db = get_db()
+    cursor = db.execute(
+        """SELECT wishes.id, child_name, toys.name as toy
+        FROM wishes LEFT JOIN toys
+        ON wishes.toy_id = toys.ID"""
+    )
+    wishes = []
+    for wish in cursor:
+        wishes.append({
+            'id': wish[0],
+            'child_name': wish[1],
+            'toy': wish[2]
+        })
+    if wishes != []:
+        return jsonify(wishes)
+    return "No wish yet!"
+
+
+@app.route('/wishes', methods=['GET', 'POST'])
+def create_wish():
+    db = get_db()
+    if request.method == 'POST':
+        wish = request.values
+        wish_keys = list(wish.keys())
+        attributes = ['child_name', 'toy']
+        for k in attributes:
+            if k in wish_keys and len(wish_keys) == len(attributes):
+                child_name = request.form.get('child_name')
+                toy = request.form.get('toy')
+            
+        cursor = db.execute("SELECT id FROM toys WHERE name = ?", [toy])
+        toy_id = cursor.fetchone()
+        if toy_id is None:
+            abort(422)
+        else:
+            cursor = db.execute(
+                    """INSERT INTO wishes (child_name, toy_id)
+                    VALUES (?, ?)""", [child_name, toy_id[0]]
+                )
+            db.commit()
+            cursor = db.execute(
+            """SELECT max(wishes.id), child_name, toys.name as toy
+            FROM wishes LEFT JOIN toys 
+            ON wishes.toy_id = toys.id
+            WHERE toys.name = ?""",
+            [toy]
+        )
+            new_wish = cursor.fetchone()
+            cursor = db.execute(
+                "SELECT id FROM elves"
+            )
+            elves_id = []
+            for elf in cursor:
+                elves_id.append(elf[0])
+            elf_random = randrange(len(elves_id))
+            elf_id = elves_id[elf_random]
+            cursor = db.execute(
+                """INSERT INTO schedules (wish_id, elf_id)
+                VALUES (?, ?)""", [new_wish[0], elf_id]
+            )
+            db.commit()
+            return jsonify({
+                'id': new_wish[0],
+                'child_name': new_wish[1],
+                'toy': new_wish[2]
+            })
+         
+
+@app.route('/schedules')
+def index_schedules():
+    db = get_db()
+    cursor = db. execute(
+        "SELECT id, wish_id, elf_id, done, done_at FROM schedules"
+    )
+    schedules = []
+    for sched in cursor:
+        schedules.append({
+            'id': sched[0],
+            'wish_id': sched[1],
+            'elf_id': sched[2],
+            'done': sched[3],
+            'done_at': sched[4]
+        })
+    return jsonify(schedules)
 
 
 if __name__ == "__main__":

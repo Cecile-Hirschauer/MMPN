@@ -85,12 +85,30 @@ cursor.execute("DROP TABLE IF EXISTS wishes")
 cursor.execute(
     """ CREATE TABLE wishes (id INTEGER PRIMARY KEY AUTOINCREMENT,
     child_name VARCHAR(255) NOT NULL,
-    toy_id INTEGER,
+    toy_id INTEGER NOT NULL,
     CONSTRAINT fk_toys
     FOREIGN KEY (toy_id)
     REFERENCES toys(toy_id))"""
 )
  
+# schedules table
+cursor.execute('DROP TABLE IF EXISTS schedules')
+cursor.execute(
+    """ CREATE TABLE schedules
+    (id INTEGER PRIMARY KEY AUTOINCREMENT,
+     elf_id INTEGER NOT NULL,
+     wish_id INTEGER NOT NULL,
+     done BOOlEAN NOT NULL DEFAULT False,
+     done_at DATE DEFAULT None,
+     CONSTRAINT fk_elves
+     FOREIGN KEY (elf_id)
+     REFERENCES elves(elf_id),
+     CONSTRAINT fk_wishes
+     FOREIGN KEY (wish_id)
+     REFERENCES  wishes(wish_id)
+    )
+    """
+)
 # We save our changes into the database file
 db.commit()
 
