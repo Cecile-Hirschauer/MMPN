@@ -378,7 +378,7 @@ def show_elf(elf_id):
         })
 
 
-@app.route('/elves', methods=['GET', 'POST'])
+@app.route('/elves', methods=['POST'])
 def create_elf():
     db = get_db()
     if request.method == 'POST':
