@@ -195,8 +195,8 @@ def create_toy():
         new_toy = request.values
         new_toy_keys = list(new_toy.keys())
         attributes = ['name', 'description', 'price', 'category']
-        for k in new_toy_keys:
-            if k in attributes and len(new_toy_keys) == len(attributes):
+        for attr in new_toy_keys:
+            if attr in attributes and len(new_toy_keys) == len(attributes):
                 name = request.form.get('name')
                 description = request.form.get('description')
                 price = int(request.form.get('price'))
